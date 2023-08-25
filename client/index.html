@@ -1,21 +1,39 @@
 <!DOCTYPE html>
     <head>
         <title>파일 확장자 차단</title>
-        <script>
-            const formData = new URLSearchParams();
-            formData.append('name', 'test');
-            formData.append('type', 'qwe');
-
-            fetch('http://localhost:3000/api/extensions', {
-                method: 'POST',
-                headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: formData,
-            })
-            .then(res => res.json())
-            .then(data => console.log(data));
-        </script>
+        <style>
+            .custom_extension_list {
+                box-shadow: 0 4px 16px 0 rgba(17, 42, 128, 0.08);
+                width: 100%;
+                min-height: fit-content;
+                height: 100%;
+            }
+            .custom_extension_span {
+                box-shadow: 0 4px 16px 0 rgba(11, 52, 187, 0.08);
+                display: inline-flex;
+                position: relative;
+                margin: 10px 10px;
+                padding: 7px 11px;
+                border: 1px solid red;
+                border-radius: 32px;
+                box-sizing: border-box;
+                color: var(--gray100);
+                font-size: 15px;
+                letter-spacing: -0.5px;
+                line-height: 20px;
+                background: var(--white);
+                align-items: center;
+                justify-content: center;
+            }
+            .custom_extension_delete_button {
+                border: none;
+                background-color: rgba(0, 0, 0, 0);
+                cursor: pointer;
+            }
+            .description {
+                vertical-align: top;
+            }
+        </style>
     </head>
     <body>
         <table>
@@ -24,24 +42,257 @@
                     고정 확장자
                 </td>
                 <td>
-                    <input type="checkbox" name="bat" id="bat"> bat
-                    <input type="checkbox" name="cmd" id="cmd"> cmd
-                    <input type="checkbox" name="com" id="com"> com
-                    <input type="checkbox" name="cpl" id="cpl"> cpl
-                    <input type="checkbox" name="exe" id="exe"> exe
-                    <input type="checkbox" name="scr" id="scr"> scr
-                    <input type="checkbox" name="js" id="js"> js
+                    <input type="checkbox" class="fixed_extension_checkbox" name="bat" id="bat" value="bat" onclick="saveFixedExtensionStatus(this)"> bat
+                    <input type="checkbox" class="fixed_extension_checkbox" name="cmd" id="cmd" value="cmd" onclick="saveFixedExtensionStatus(this)"> cmd
+                    <input type="checkbox" class="fixed_extension_checkbox" name="com" id="com" value="com" onclick="saveFixedExtensionStatus(this)"> com
+                    <input type="checkbox" class="fixed_extension_checkbox" name="cpl" id="cpl" value="cpl" onclick="saveFixedExtensionStatus(this)"> cpl
+                    <input type="checkbox" class="fixed_extension_checkbox" name="exe" id="exe" value="exe" onclick="saveFixedExtensionStatus(this)"> exe
+                    <input type="checkbox" class="fixed_extension_checkbox" name="scr" id="scr" value="scr" onclick="saveFixedExtensionStatus(this)"> scr
+                    <input type="checkbox" class="fixed_extension_checkbox" name="js" id="js" value="js" onclick="saveFixedExtensionStatus(this)"> js
                 </td>
             </tr>
             <tr>
-                <td>
+                <td class="description">
                     커스텀 확장자
                 </td>
                 <td>
-                    <input type="text" name="custom_extension_name" placeholder="확장자 입력"> <input type="button" value="+추가"> <br>
-                    <textarea name="custom_extension_list"></textarea>
+                    <input type="text" name="custom_extension_name" id="custom_extension_name" placeholder="확장자 입력(20자 이하)" maxlength="20"> <input type="button" id="custom_extension_button" value="+추가" onclick="addExtension('custom')"> <br>
+                    <div name="custom_extension_list" class="custom_extension_list" id="custom_extension_list">
+                        <span name="custom_extension_length" id="custom_extension_length"></span><br>
+                    </div>
                 </td>
             </tr>
         </table>
+        <script>
+            const apiUrl = '/api/extensions';
+
+            const createElementWithAttributes = (type, attributes={}) => {
+                const element = document.createElement(type);
+                for (let key in attributes) {
+                    element.setAttribute(key, attributes[key]);
+                }
+                return element;
+            }
+
+            const setCustomExtensionStatus = (status) => {
+                const textbox = document.getElementById("custom_extension_name");
+                const button = document.getElementById("custom_extension_button");
+
+                if (!status) {
+                    textbox.setAttribute('disabled', true);
+                    button.setAttribute('disabled', true);
+                } else {
+                    textbox.removeAttribute('disabled');
+                    button.removeAttribute('disabled');
+                }
+            }
+
+            const setCheckAndDeleteButtonStatus = (status) => {
+                const checkbox = document.getElementsByClassName("fixed_extension_checkbox");
+                const checkboxLength = checkbox.length;
+                const deleteExtensionButton = document.getElementsByClassName('custom_extension_delete_button');
+                const deleteExtensionButtonLength = deleteExtensionButton.length;
+
+                if(!status) {
+                    for (let i = 0; i < checkboxLength; i++) {
+                        checkbox[i].setAttribute('disabled', true);
+                    }
+                    for (let i = 0; i < deleteExtensionButtonLength; i++) {
+                        deleteExtensionButton[i].setAttribute('disabled', true);
+                    }
+                } else {
+                    for (let i = 0; i < checkboxLength; i++) {
+                        checkbox[i].removeAttribute('disabled');
+                    }
+                    for (let i = 0; i < deleteExtensionButtonLength; i++) {
+                        deleteExtensionButton[i].removeAttribute('disabled');
+                    }
+                }
+            }
+            
+            const setExtensionWritable = (status) => {
+                const textbox = document.getElementById("custom_extension_name");
+                const button = document.getElementById("custom_extension_button");
+                const checkbox = document.getElementsByClassName("fixed_extension_checkbox");
+                const checkboxLength = checkbox.length;
+                const deleteExtensionButton = document.getElementsByClassName('custom_extension_delete_button');
+                const deleteExtensionButtonLength = deleteExtensionButton.length;
+
+                if(!status) {
+                    textbox.setAttribute('readonly', true);
+                    button.setAttribute('disabled', true);
+                    for (let i = 0; i < checkboxLength; i++) {
+                        checkbox[i].setAttribute('disabled', true);
+                    }
+                    for (let i = 0; i < deleteExtensionButtonLength; i++) {
+                        deleteExtensionButton[i].setAttribute('disabled', true);
+                    }
+                } else {
+                    textbox.removeAttribute('readonly');
+                    button.removeAttribute('disabled');
+                    for (let i = 0; i < checkboxLength; i++) {
+                        checkbox[i].removeAttribute('disabled');
+                    }
+                    for (let i = 0; i < deleteExtensionButtonLength; i++) {
+                        deleteExtensionButton[i].removeAttribute('disabled');
+                    }
+                }
+            }
+
+            const initTable = () => {
+                const url = apiUrl;
+
+                fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.fixedExtensionListLength > 0) {
+                        data.fixedExtensionList.forEach(extension => {
+                            const checkbox = document.getElementById(extension.name);
+                            if(checkbox != null) {
+                                checkbox.checked = true;
+                            }
+                        });
+                    }
+
+                    const div = document.getElementById('custom_extension_list');
+                    div.innerHTML = ""
+
+                    const customExtensionListLength = data.customExtensionListLength;
+                    const customExtensionListLengthSpan = createElementWithAttributes('span', {id: 'custom_extension_length', name: 'custom_extension_length'});
+                    customExtensionListLengthSpan.innerText = customExtensionListLength + '/200';
+
+                    const br = document.createElement('br');
+
+                    div.appendChild(customExtensionListLengthSpan);
+                    div.appendChild(br);
+
+                    if(customExtensionListLength > 0) {
+                        data.customExtensionList.forEach(extension => {
+                            const span = createElementWithAttributes('span', {class: 'custom_extension_span'});
+                            span.innerText = extension.name;
+
+                            const buttonAttributes = {
+                                type: 'button', 
+                                class: 'custom_extension_delete_button', 
+                                value: 'x', 
+                                onclick: 'deleteExtension(\'' + extension.name + '\')'
+                            }
+                            const button = createElementWithAttributes('input', buttonAttributes);
+                            
+                            div.appendChild(span);
+                            span.appendChild(button);
+                        });
+                    }
+                    
+                    if (customExtensionListLength >= 200) setCustomExtensionStatus(false);
+                    else setCustomExtensionStatus(true);
+
+                    setCheckAndDeleteButtonStatus(true);
+                })
+                .catch(error => {
+                    console.log(error);
+                })
+            }
+
+            const deleteExtension = (name) => {
+                setCustomExtensionStatus(false);
+                setCheckAndDeleteButtonStatus(false);
+                const url = apiUrl +'/' + name;
+
+                fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                })
+                .then(res => {
+                    const status = res.status;
+
+                    if(status !== 204) res.json().then(data => alert(data.errorMessage));
+                    initTable(); 
+                })
+                .catch(error => {
+                    console.log(error);
+                })
+            };
+
+            const addExtension = (type, name="") => {
+                setCustomExtensionStatus(false);
+                setCheckAndDeleteButtonStatus(false);
+
+                if(type === "custom") {
+                    name = document.getElementById('custom_extension_name').value;
+                }
+                const obj = { name: name, type: type };
+                const body = JSON.stringify(obj);
+                const url = apiUrl;
+
+                const regExtension = /^(?!.*\.$)(?=.*[a-zA-Z])[a-zA-Z0-9]{1}(?:[a-zA-Z0-9.]{0,18}[a-zA-Z0-9])?(?<!\.)$/;
+
+                if(!regExtension.test(name)) {
+                    alert("유효하지 않은 확장자명 입니다.");
+                    initTable();
+                    return false;
+                }
+
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: body,
+                })
+                .then(res => {
+                    const jsonData = res.json()
+
+                    if(res.status !== 201) {
+                        jsonData.then(data => {
+                            alert(data.errorMessage);
+                        })
+                    }
+                    initTable();
+                })
+                .catch(error => {
+                    console.log(error);
+                })
+            }
+
+            const saveFixedExtensionStatus = (box) => {
+                setCustomExtensionStatus(false);
+                setCheckAndDeleteButtonStatus(false);
+
+                if (box.checked === true) {
+                    addExtension("fixed", box.value); 
+                } else {
+                    deleteExtension(name = box.value);
+                }
+            }
+
+            window.addEventListener('DOMContentLoaded', function()
+            {
+                initTable();
+                const url = apiUrl;
+                
+
+                // for (let i = 0; i < 200; i++) {
+                //     const qwe = 'qwe' + i;
+                //     const obj = { name: qwe, type: 'custom' };
+                //     const body = JSON.stringify(obj);
+
+                //     fetch(url, {
+                //         method: 'POST',
+                //         headers: {
+                //             'Content-Type': 'application/json'
+                //         },
+                //         body: body,
+                //     })
+                // }
+            });
+        </script>
     </body>
 </html>

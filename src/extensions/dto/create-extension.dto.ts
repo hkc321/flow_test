@@ -1,4 +1,4 @@
 export class CreateExtensionDto {
-  type: string;
-  name: string;
+  readonly type: string;
+  readonly name: string;
 }

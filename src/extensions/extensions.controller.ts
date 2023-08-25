@@ -26,8 +26,17 @@ export class ExtensionsController {
   }
 
   @Get()
-  findAll() {
-    return this.extensionsService.findAll();
+  async findAll() {
+    const fixedExtensionList = await this.extensionsService.findByType('fixed');
+    const customExtensionList =
+      await this.extensionsService.findByType('custom');
+
+    return {
+      fixedExtensionListLength: fixedExtensionList.length,
+      fixedExtensionList: fixedExtensionList,
+      customExtensionListLength: customExtensionList.length,
+      customExtensionList: customExtensionList,
+    };
   }
 
   // @Get(':id')
@@ -43,8 +52,9 @@ export class ExtensionsController {
   //   return this.extensionsService.update(+id, updateExtensionDto);
   // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.extensionsService.remove(+id);
+  @Delete(':name')
+  @HttpCode(204)
+  remove(@Param('name') name: string) {
+    this.extensionsService.remove(name);
   }
 }
