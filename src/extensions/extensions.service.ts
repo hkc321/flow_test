@@ -42,7 +42,7 @@ export class ExtensionsService {
       const count = await this.extensionRepository.countBy({ type: 'custom' });
       console.log(count);
 
-      if (count > 200) {
+      if (count >= 200) {
         throw new HttpException(
           {
             errorCode: 'count_limit',
