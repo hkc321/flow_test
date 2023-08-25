@@ -3,14 +3,14 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   HttpCode,
+  Res,
 } from '@nestjs/common';
 import { ExtensionsService } from './extensions.service';
 import { CreateExtensionDto } from './dto/create-extension.dto';
-import { UpdateExtensionDto } from './dto/update-extension.dto';
+import { Response } from 'express'; // Import the Response type
 
 @Controller('extensions')
 export class ExtensionsController {
@@ -18,11 +18,19 @@ export class ExtensionsController {
 
   @Post()
   @HttpCode(201)
-  create(@Body() createExtensionDto: CreateExtensionDto) {
-    return this.extensionsService.create(
+  async create(
+    @Body() createExtensionDto: CreateExtensionDto,
+    @Res() res: Response,
+  ) {
+    const result = await this.extensionsService.create(
       createExtensionDto.type,
       createExtensionDto.name,
     );
+
+    res
+      .header('Location', '/api/extensions/' + createExtensionDto.name)
+      .json(result)
+      .send();
   }
 
   @Get()

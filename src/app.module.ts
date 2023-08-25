@@ -6,8 +6,6 @@ import { AppService } from './app.service';
 import { join } from 'path';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ExtensionsModule } from './extensions/extensions.module';
-import { ExtensionsController } from './extensions/extensions.controller';
-import { ExtensionsService } from './extensions/extensions.service';
 import { ExtensionEntity } from './extensions/entities/extension.entity';
 
 @Module({
