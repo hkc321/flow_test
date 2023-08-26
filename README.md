@@ -1,73 +1,47 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Flow Test
+플로우 과제 - 파일 확장자 차단
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## 접속 주소
+https://jgchktestdns.shop/flow
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 사용 기술
+[![](https://img.shields.io/badge/NestJS-gray?logo=nestjs)](https://nestjs.com/)
+[![](https://img.shields.io/badge/javascript-gray?logo=javascript)](https://www.ecma-international.org/)
+[![](https://img.shields.io/badge/typescript-gray?logo=typescript)](https://www.typescriptlang.org/)
+[![](https://img.shields.io/badge/HTML-gray?logo=HTML5)](https://www.w3.org/)
+[![](https://img.shields.io/badge/CSS-gray?logo=CSS)](https://www.w3.org/TR/CSS/#css)
+[![](https://img.shields.io/badge/docker-gray?logo=docker)](https://www.docker.com/)
 
-## Description
+## 고려한 점
+### 커스텀 확장자 중복 체크
+커스텀 확장자 추가 시 DB를 조회하여 이미 존재할 시 추가할 수 없도록 하였습니다.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### 커스텀 확장자 형식 검사
+정규식을 사용하여 커스텀 확장자의 형식을 지정하였습니다. 해당 문제에서는 최대 20자리라는 제한사항만 존재하지만 보통 확장자에는 영어가 들어가지 않기 때문에 제가 임의의 형식을 지정하였습니다.
+1. 첫 글자는 영어로 시작해야 합니다.
+2. 필요한 경우 숫자를 포함할 수 있으며 연속적으로 여러 개 나올 수 있습니다.
+3. 문자열의 길이는 최소 1자, 최대 20자여야 합니다.
+4. 공백은 허용되지 않습니다.
+5. .(마침표)는 첫 번째 또는 마지막 위치를 제외한 모든 위치에서 허용되며, 연속적으로 나오지 않습니다.(ex: tar.gz)
+6. .(마침표) 은 한번만 나올 수 있다.
+7. 영어, 숫자, .(마침표)를 제외한 값은 들어갈 수 없다.
 
-## Installation
+해당 로직은 프론트에서 한번, 백앤드에서 한번 검사합니다. 개발자 도구를 통한 스크립트 변경이 있을 수도 있고 postman같은 도구로 서버에 직접 접근할 수도 있기에 프론트/백 두 곳에서 검사합니다.
 
-```bash
-$ yarn install
-```
+### 서버에서 요청 처리 전 프론트 입력 막기
+제가 만든 페이지는 자바스크립트의 fetch를 이용하여 서버에 비동기적으로 요청합니다. 페이지 전환없이 구현하기 위함입니다. 그 과정 중 혹시나 서버에서 요청을 처리하기 전 까지 잠시 시간이 걸릴 경우, 프론트에서 다시 요청을 할 수 있다고 생각했습니다(추가 버튼 클릭 / 체크박스 클릭 / 제거 버튼 클릭 등). 따라서 프론트에서 서버에 요청 시 스크립트를 통해 추가 버튼, 체크박스, 텍스트박스, 제거 버튼을 비활성화 하도록 하였습니다.
 
-## Running the app
+### RESTful한 api 만들기
+RESTful한 조건을 만족하기 위해 노력하였습니다. 추가/조회/제거에 맞는 HTTP메소드를 사용하였고 상황에 맞는 응답코드를 반환하도록 하였습니다. 과제 화면에서는 수정기능이 보이지 않았기에 추가, 조회, 제거 3가지만 만들었습니다.
 
-```bash
-# development
-$ yarn run start
+### 예외처리
+형식에 맞지 않는 확장자 명, 이미 존재하는 확장자 명 등의 예외를 처리하였습니다. http status code와 메시지를 응답하여 클라이언트가 오류 내용을 알 수 있도록 하였습니다.
 
-# watch mode
-$ yarn run start:dev
+### 테스트코드 작성
+service layer의 테스트 코드를 작성하여 로직을 점검하였습니다. 
 
-# production mode
-$ yarn run start:prod
-```
+### 기술스택 선정
+과제 페이지가 간단하였기 때문에 프론트는 HTML/CSS와 javascript를 사용하기로 하였습니다. 따라서 백엔드 또한 javascript를 사용하는 node를 고려했고 최종적으로 구현시간을 단축하기 위해 제가 이전에 사용했던 spring과 비슷한 nestjs를 사용하기로 하였습니다. 
 
-## Test
-
-```bash
-# unit tests
-$ yarn run test
-
-# e2e tests
-$ yarn run test:e2e
-
-# test coverage
-$ yarn run test:cov
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+### 태그정렬
+inline-flex속성을 활용하여 태그들이 화면에 맞게 정렬되도록 하였습니다.
