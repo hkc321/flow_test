@@ -12,6 +12,22 @@ https://jgchktestdns.shop/flow
 [![](https://img.shields.io/badge/CSS-gray?logo=CSS)](https://www.w3.org/TR/CSS/#css)
 [![](https://img.shields.io/badge/docker-gray?logo=docker)](https://www.docker.com/)
 
+## DB
+### table
+|extension_id (int)|
+|---|
+|type (varchar)|
+|name (varchar)|
+|created_at (datetime)|
+
+### primary key
+- extension_id (auto_increment)
+
+### index
+- extension_id (primary)
+- name (unique)
+- type, name (composite Index)
+
 ## 고려한 점
 ### 커스텀 확장자 중복 체크
 커스텀 확장자 추가 시 DB를 조회하여 이미 존재할 시 추가할 수 없도록 하였습니다.
@@ -35,7 +51,7 @@ https://jgchktestdns.shop/flow
 RESTful한 조건을 만족하기 위해 노력하였습니다. 추가/조회/제거에 맞는 HTTP메소드를 사용하였고 상황에 맞는 응답코드를 반환하도록 하였습니다. 과제 화면에서는 수정기능이 보이지 않았기에 추가, 조회, 제거 3가지만 만들었습니다.
 
 ### 예외처리
-형식에 맞지 않는 확장자 명, 이미 존재하는 확장자 명 등의 예외를 처리하였습니다. http status code와 메시지를 응답하여 클라이언트가 오류 내용을 알 수 있도록 하였습니다.
+형식에 맞지 않는 확장자 명, 이미 존재하는 확장자 명 등의 예외를 처리하였습니다. http status code와 메시지를 통해 클라이언트가 오류 내용을 알 수 있도록 하였습니다.
 
 ### 테스트코드 작성
 service layer의 테스트 코드를 작성하여 로직을 점검하였습니다. 
@@ -45,3 +61,6 @@ service layer의 테스트 코드를 작성하여 로직을 점검하였습니�
 
 ### 태그정렬
 inline-flex속성을 활용하여 태그들이 화면에 맞게 정렬되도록 하였습니다.
+
+### 인덱스 설계
+페이지 로드 때마다 매번 where문을 통해 태그 리스트들을 조회하기 때문에 인덱스가 필요하다고 생각했습니다. 다만 페이지 특성상 insert와 delete가 빈번하지 않을까 고민하였으나 한번 설정한 것을 다시 바꾸는 일은 많지 않을거 같아 조회 시 자주 사용되는 type과 name을 인덱스로 만들었습니다.
