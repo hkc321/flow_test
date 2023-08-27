@@ -60,6 +60,29 @@ describe('ExtensionsService', () => {
       );
     });
 
+    it('should throw an exception for invalid extension type', async () => {
+      // Run create with an invalid extension type
+      const validName = 'validName';
+      const invalidType = 'invalidType';
+      const createPromise = service.create(invalidType, validName);
+      await expect(createPromise).rejects.toThrow(HttpException);
+
+      // to get error object
+      let errorObject: HttpException;
+
+      try {
+        await createPromise;
+      } catch (error) {
+        errorObject = error;
+      }
+
+      // assert
+      expect(errorObject.getResponse()).toEqual(
+        '유효하지 않은 확장자 타입 입니다.',
+      );
+      expect(errorObject.getStatus()).toEqual(400);
+    });
+
     it('should throw an exception for invalid extension name', async () => {
       // Run create with an invalid extension name
       const invalidName = '123';
@@ -77,7 +100,7 @@ describe('ExtensionsService', () => {
 
       // assert
       expect(errorObject.getResponse()).toEqual(
-        '유효하지 않은 확장자명 입니다.',
+        '유효하지 않은 커스텀 확장자명 입니다.',
       );
       expect(errorObject.getStatus()).toEqual(400);
     });
@@ -101,7 +124,9 @@ describe('ExtensionsService', () => {
 
       // assert
       await expect(createPromise).rejects.toThrow(HttpException);
-      expect(errorObject.getResponse()).toEqual('이미 존재하는 확장자입니다.');
+      expect(errorObject.getResponse()).toEqual(
+        '이미 존재하는 커스텀 확장자입니다.',
+      );
       expect(errorObject.getStatus()).toEqual(409);
     });
 
@@ -179,6 +204,19 @@ describe('ExtensionsService', () => {
       // assert
       expect(extensionRepositoryMock.find).toBeCalledWith({
         where: { type: type },
+      });
+    });
+  });
+
+  describe('findByName', () => {
+    it('should excute with provided name', async () => {
+      // run findByType
+      const name = 'someName';
+      await service.findOneByName(name);
+
+      // assert
+      expect(extensionRepositoryMock.findOne).toBeCalledWith({
+        where: { name: name },
       });
     });
   });

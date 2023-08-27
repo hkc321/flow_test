@@ -7,6 +7,8 @@ import {
   Delete,
   HttpCode,
   Res,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { ExtensionsService } from './extensions.service';
 import { CreateExtensionDto } from './dto/create-extension.dto';
@@ -18,6 +20,7 @@ export class ExtensionsController {
 
   @Post()
   @HttpCode(201)
+  @UsePipes(ValidationPipe)
   async create(
     @Body() createExtensionDto: CreateExtensionDto,
     @Res() res: Response,
@@ -47,22 +50,14 @@ export class ExtensionsController {
     };
   }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.extensionsService.findOne(+id);
-  // }
-
-  // @Patch(':id')
-  // update(
-  //   @Param('id') id: string,
-  //   @Body() updateExtensionDto: UpdateExtensionDto,
-  // ) {
-  //   return this.extensionsService.update(+id, updateExtensionDto);
-  // }
+  @Get(':name')
+  async findOne(@Param('name') name: string) {
+    return await this.extensionsService.findOneByName(name);
+  }
 
   @Delete(':name')
   @HttpCode(204)
-  remove(@Param('name') name: string) {
-    this.extensionsService.remove(name);
+  async remove(@Param('name') name: string) {
+    return this.extensionsService.remove(name);
   }
 }

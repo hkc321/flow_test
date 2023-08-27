@@ -12,12 +12,21 @@ export class ExtensionsService {
   ) {}
 
   async create(type: string, name: string) {
-    const regExtension =
-      /^(?!.*\.$)(?=.*[a-zA-Z])[a-zA-Z0-9]{1}(?:[a-zA-Z0-9.]{0,18}[a-zA-Z0-9])?(?<!\.)$/;
-
-    if (!regExtension.test(name)) {
+    const typeList = ['fixed', 'custom'];
+    if (!typeList.includes(type)) {
       throw new HttpException(
-        '유효하지 않은 확장자명 입니다.',
+        '유효하지 않은 확장자 타입 입니다.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const regExtension =
+      /^(?!.*\.\.)(?!.*\.$)[a-zA-Z][a-zA-Z0-9]*\.?[a-zA-Z0-9]*$/;
+    const nameLength = name.length;
+
+    if (!regExtension.test(name) || nameLength > 20 || nameLength < 1) {
+      throw new HttpException(
+        '유효하지 않은 커스텀 확장자명 입니다.',
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -25,7 +34,7 @@ export class ExtensionsService {
     const findExtension = await this.findOneByName(name);
     if (findExtension != null) {
       throw new HttpException(
-        '이미 존재하는 확장자입니다.',
+        '이미 존재하는 커스텀 확장자입니다.',
         HttpStatus.CONFLICT,
       );
     }
@@ -48,13 +57,6 @@ export class ExtensionsService {
     return await this.extensionRepository.save(extensionEntity);
   }
 
-  async findAll() {
-    const extensionList = await this.extensionRepository.find();
-    const listLength = extensionList.length;
-
-    return { length: listLength, extensionList: extensionList };
-  }
-
   async findByType(type: string) {
     return await this.extensionRepository.find({
       where: { type: type },
@@ -66,10 +68,6 @@ export class ExtensionsService {
       where: { name: name },
     });
   }
-
-  // async update(id: number, updateExtensionDto: UpdateExtensionDto) {
-  //   return `This action updates a #${id} extension`;
-  // }
 
   async remove(name: string) {
     const result = await this.extensionRepository.delete({ name: name });

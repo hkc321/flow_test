@@ -1,12 +1,14 @@
 <!DOCTYPE html>
+<html lang=ko>
     <head>
         <title>파일 확장자 차단</title>
         <style>
             .custom_extension_list {
                 box-shadow: 0 4px 16px 0 rgba(17, 42, 128, 0.08);
                 width: 100%;
-                min-height: fit-content;
                 height: 100%;
+                min-height: 100px;
+                margin-top: 20px;
             }
             .custom_extension_span {
                 box-shadow: 0 4px 16px 0 rgba(11, 52, 187, 0.08);
@@ -32,13 +34,64 @@
             }
             .description {
                 vertical-align: top;
+                width: 10%;
+            }
+            .extension_table {
+                margin-left: auto;
+                margin-right: auto;
+                width: 80%;
+            }
+            td {
+                padding: 10px;
+            }
+
+
+            /* popup css */
+            .background {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100vh;
+                background-color: rgba(0, 0, 0, 0.3);
+                z-index: 1000;
+
+                /* 숨기기 */
+                z-index: -1;
+                opacity: 0;
+            }
+            .show {
+                opacity: 1;
+                z-index: 1000;
+                transition: all 0.5s;
+                margin-left: 10px;
+            }
+            .window {
+                position: relative;
+                width: 100%;
+                height: 100%;
+            }
+            .popup {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background-color: #ffffff;
+                box-shadow: 0 2px 7px rgba(0, 0, 0, 0.3);
+                padding: 20px;
+            }
+            .show .popup {
+                transform: translate(-50%, -50%);
+                transition: all 0.5s;
             }
         </style>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta charset="utf-8">
     </head>
     <body>
-        <table>
+        <table class="extension_table">
             <tr>
-                <td>
+                <td class="description">
                     고정 확장자
                 </td>
                 <td>
@@ -56,16 +109,36 @@
                     커스텀 확장자
                 </td>
                 <td>
-                    <input type="text" name="custom_extension_name" id="custom_extension_name" placeholder="확장자 입력(20자 이하)" maxlength="20"> <input type="button" id="custom_extension_button" value="+추가" onclick="addExtension('custom')"> <br>
+                    <input type="text" name="custom_extension_name" id="custom_extension_name" placeholder="확장자 입력(20자 이하)" maxlength="20">
+                    <input type="button" id="custom_extension_button" value="+추가" onclick="addExtension('custom')">
+                    <input type="button" id="show" value="확장자 추가 도움말">
                     <div name="custom_extension_list" class="custom_extension_list" id="custom_extension_list">
                         <span name="custom_extension_length" id="custom_extension_length"></span><br>
                     </div>
                 </td>
             </tr>
         </table>
+        <div class="background">
+            <div class="window">
+                <div class="popup">
+                    <input type="button" id="close" value="닫기">
+                    <h3>커스텀 확장자 규칙</h3>
+                    <ul>
+                        <li>첫 글자는 영어로 시작해야 합니다.</li>
+                        <li>필요한 경우 숫자를 포함할 수 있으며 연속적으로 여러 개 나올 수 있습니다.</li>
+                        <li>문자열의 길이는 최소 1자, 최대 20자여야 합니다.</li>
+                        <li>공백은 허용되지 않습니다.</li>
+                        <li>마침표는 첫 번째 또는 마지막 위치를 제외한 모든 위치에서 허용되며, 연속적으로 나오지 않습니다.</li>
+                        <li>마침표는 한 번만 나올 수 있습니다.</li>
+                        <li>영어, 숫자, .(마침표)를 제외한 값은 들어갈 수 없습니다.</li>
+                    </ul>
+                </div>
+            <div>
+        <div>
         <script>
             const apiUrl = '/api/extensions';
 
+            // custom html element 만들기
             const createElementWithAttributes = (type, attributes={}) => {
                 const element = document.createElement(type);
                 for (let key in attributes) {
@@ -74,6 +147,7 @@
                 return element;
             }
 
+            // textbox, 추가 버튼 disabled 설정 메소드
             const setCustomExtensionStatus = (status) => {
                 const textbox = document.getElementById("custom_extension_name");
                 const button = document.getElementById("custom_extension_button");
@@ -87,6 +161,7 @@
                 }
             }
 
+            // checkbox, delete button disabled 설정 메소드
             const setCheckAndDeleteButtonStatus = (status) => {
                 const checkbox = document.getElementsByClassName("fixed_extension_checkbox");
                 const checkboxLength = checkbox.length;
@@ -109,36 +184,8 @@
                     }
                 }
             }
-            
-            const setExtensionWritable = (status) => {
-                const textbox = document.getElementById("custom_extension_name");
-                const button = document.getElementById("custom_extension_button");
-                const checkbox = document.getElementsByClassName("fixed_extension_checkbox");
-                const checkboxLength = checkbox.length;
-                const deleteExtensionButton = document.getElementsByClassName('custom_extension_delete_button');
-                const deleteExtensionButtonLength = deleteExtensionButton.length;
 
-                if(!status) {
-                    textbox.setAttribute('readonly', true);
-                    button.setAttribute('disabled', true);
-                    for (let i = 0; i < checkboxLength; i++) {
-                        checkbox[i].setAttribute('disabled', true);
-                    }
-                    for (let i = 0; i < deleteExtensionButtonLength; i++) {
-                        deleteExtensionButton[i].setAttribute('disabled', true);
-                    }
-                } else {
-                    textbox.removeAttribute('readonly');
-                    button.removeAttribute('disabled');
-                    for (let i = 0; i < checkboxLength; i++) {
-                        checkbox[i].removeAttribute('disabled');
-                    }
-                    for (let i = 0; i < deleteExtensionButtonLength; i++) {
-                        deleteExtensionButton[i].removeAttribute('disabled');
-                    }
-                }
-            }
-
+            // tag table 초기화 메소드
             const initTable = () => {
                 const url = apiUrl;
 
@@ -199,6 +246,7 @@
                 })
             }
 
+            // extension 제거 메소드
             const deleteExtension = (name) => {
                 setCustomExtensionStatus(false);
                 setCheckAndDeleteButtonStatus(false);
@@ -213,7 +261,7 @@
                 .then(res => {
                     const status = res.status;
 
-                    if(status !== 204) res.json().then(data => alert(data.errorMessage));
+                    if(status !== 204) res.json().then(data => alert(data.message));
                     initTable(); 
                 })
                 .catch(error => {
@@ -221,21 +269,24 @@
                 })
             };
 
+            // extension 추가 메소드
             const addExtension = (type, name="") => {
                 setCustomExtensionStatus(false);
                 setCheckAndDeleteButtonStatus(false);
+                const customExtensionTextbox = document.getElementById('custom_extension_name');
 
                 if(type === "custom") {
-                    name = document.getElementById('custom_extension_name').value;
+                    name = customExtensionTextbox.value;
                 }
                 const obj = { name: name, type: type };
                 const body = JSON.stringify(obj);
                 const url = apiUrl;
 
-                const regExtension = /^(?!.*\.$)(?=.*[a-zA-Z])[a-zA-Z0-9]{1}(?:[a-zA-Z0-9.]{0,18}[a-zA-Z0-9])?(?<!\.)$/;
+                const regExtension = /^(?!.*\.\.)(?!.*\.$)[a-zA-Z][a-zA-Z0-9]*\.?[a-zA-Z0-9]*$/;
+                const nameLength = name.length;
 
-                if(!regExtension.test(name)) {
-                    alert("유효하지 않은 확장자명 입니다.");
+                if(!regExtension.test(name) || nameLength > 20 || nameLength < 1) {
+                    alert("유효하지 않은 커스텀 확장자명 입니다.");
                     initTable();
                     return false;
                 }
@@ -252,9 +303,20 @@
 
                     if(res.status !== 201) {
                         jsonData.then(data => {
-                            alert(data.errorMessage);
+                            let message = "";
+
+                            if (Array.isArray(data.message)) {
+                                data.message.forEach(element => {
+                                    message += element + "\n";
+                                });
+                            } else {
+                                message = data.message;
+                            }
+
+                            alert(message);
                         })
                     }
+                    customExtensionTextbox.value = "";
                     initTable();
                 })
                 .catch(error => {
@@ -262,6 +324,7 @@
                 })
             }
 
+            // 고정확장자 저장 및 삭제
             const saveFixedExtensionStatus = (box) => {
                 setCustomExtensionStatus(false);
                 setCheckAndDeleteButtonStatus(false);
@@ -273,25 +336,20 @@
                 }
             }
 
-            window.addEventListener('DOMContentLoaded', function()
-            {
+            // 도움말 열기
+            const show = () => document.querySelector(".background").className = "background show";
+
+            // 도움말 닫기
+            const close = () => document.querySelector(".background").className = "background";
+            
+
+            window.addEventListener('DOMContentLoaded', () => {
+                // table 초기화
                 initTable();
-                const url = apiUrl;
-                
 
-                // for (let i = 0; i < 200; i++) {
-                //     const qwe = 'qwe' + i;
-                //     const obj = { name: qwe, type: 'custom' };
-                //     const body = JSON.stringify(obj);
-
-                //     fetch(url, {
-                //         method: 'POST',
-                //         headers: {
-                //             'Content-Type': 'application/json'
-                //         },
-                //         body: body,
-                //     })
-                // }
+                // click event 설정
+                document.querySelector("#show").addEventListener("click", show);
+                document.querySelector("#close").addEventListener("click", close);
             });
         </script>
     </body>
