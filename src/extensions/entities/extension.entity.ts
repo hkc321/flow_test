@@ -1,8 +1,12 @@
-import { Entity, Column, PrimaryColumn } from 'typeorm';
+import { PrimaryGeneratedColumn, Entity, Column, Index } from 'typeorm';
 
 @Entity('extension')
+@Index(['type', 'name'])
 export class ExtensionEntity {
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn({ name: 'extension_id' })
+  extensionId: number;
+
+  @Column({ unique: true })
   name: string;
 
   @Column()
