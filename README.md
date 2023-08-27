@@ -14,11 +14,7 @@ https://jgchktestdns.shop/flow
 
 ## DB
 ### table
-|extension_id (int)|
-|---|
-|type (varchar)|
-|name (varchar)|
-|created_at (datetime)|
+![image](https://github.com/hunkicho/flow_test/assets/115965829/add03017-9a86-452c-8e4e-7c03e3f593b6)
 
 ### primary key
 - extension_id (auto_increment)
