@@ -201,6 +201,7 @@
                         data.fixedExtensionList.forEach(extension => {
                             const checkbox = document.getElementById(extension.name);
                             if(checkbox != null) {
+                                checkbox.value = extension.extensionId;
                                 checkbox.checked = true;
                             }
                         });
@@ -227,7 +228,7 @@
                                 type: 'button', 
                                 class: 'custom_extension_delete_button', 
                                 value: 'x', 
-                                onclick: 'deleteExtension(\'' + extension.name + '\')'
+                                onclick: 'deleteExtension(\'' + extension.extensionId + '\')'
                             }
                             const button = createElementWithAttributes('input', buttonAttributes);
                             
@@ -330,7 +331,7 @@
                 setCheckAndDeleteButtonStatus(false);
 
                 if (box.checked === true) {
-                    addExtension("fixed", box.value); 
+                    addExtension("fixed", box.name); 
                 } else {
                     deleteExtension(name = box.value);
                 }

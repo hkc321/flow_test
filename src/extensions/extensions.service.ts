@@ -60,6 +60,13 @@ export class ExtensionsService {
   async findByType(type: string) {
     return await this.extensionRepository.find({
       where: { type: type },
+      order: { name: 'ASC' },
+    });
+  }
+
+  async findOneById(extensionId: number) {
+    return await this.extensionRepository.findOne({
+      where: { extensionId: extensionId },
     });
   }
 
@@ -69,8 +76,10 @@ export class ExtensionsService {
     });
   }
 
-  async remove(name: string) {
-    const result = await this.extensionRepository.delete({ name: name });
+  async remove(extensionId: number) {
+    const result = await this.extensionRepository.delete({
+      extensionId: extensionId,
+    });
     if (result.affected === 0) {
       throw new HttpException(
         '존재하지 않는 확장자입니다.',

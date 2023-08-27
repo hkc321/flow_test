@@ -50,14 +50,14 @@ export class ExtensionsController {
     };
   }
 
-  @Get(':name')
-  async findOne(@Param('name') name: string) {
-    return await this.extensionsService.findOneByName(name);
+  @Get(':extensionId')
+  async findOne(@Param('extensionId') extensionId: number) {
+    return await this.extensionsService.findOneById(extensionId);
   }
 
-  @Delete(':name')
+  @Delete(':extensionId')
   @HttpCode(204)
-  async remove(@Param('name') name: string) {
-    return this.extensionsService.remove(name);
+  async remove(@Param('extensionId') extensionId: number) {
+    return this.extensionsService.remove(extensionId);
   }
 }

@@ -162,8 +162,8 @@ describe('ExtensionsService', () => {
       // Mock repository behavior
       extensionRepositoryMock.delete.mockReturnValue({ affected: 1 });
 
-      // run remove with validExtensionName
-      await service.remove('validExtensionName');
+      // run remove with extensionId
+      await service.remove(1);
 
       // assert
       expect(extensionRepositoryMock.delete).toBeCalled();
@@ -173,9 +173,9 @@ describe('ExtensionsService', () => {
       // Mock repository behavior
       extensionRepositoryMock.delete.mockReturnValue({ affected: 0 });
 
-      // run remove with noneExistExtensionName
-      const noneExistExtensionName = 'noneExistExtensionName';
-      const result = service.remove(noneExistExtensionName);
+      // run remove with noneExistextensionId
+      const noneExistExtensionId = 0;
+      const result = service.remove(noneExistExtensionId);
 
       // to get error object
       let errorObject: HttpException;
@@ -188,7 +188,7 @@ describe('ExtensionsService', () => {
 
       // assert
       expect(extensionRepositoryMock.delete).toHaveBeenCalledWith({
-        name: noneExistExtensionName,
+        extensionId: noneExistExtensionId,
       });
       expect(errorObject.getResponse()).toEqual('존재하지 않는 확장자입니다.');
       expect(errorObject.getStatus()).toEqual(404);
@@ -204,11 +204,12 @@ describe('ExtensionsService', () => {
       // assert
       expect(extensionRepositoryMock.find).toBeCalledWith({
         where: { type: type },
+        order: { name: 'ASC' },
       });
     });
   });
 
-  describe('findByName', () => {
+  describe('findOneByName', () => {
     it('should excute with provided name', async () => {
       // run findByType
       const name = 'someName';
@@ -217,6 +218,19 @@ describe('ExtensionsService', () => {
       // assert
       expect(extensionRepositoryMock.findOne).toBeCalledWith({
         where: { name: name },
+      });
+    });
+  });
+
+  describe('findOneById', () => {
+    it('should excute with provided name', async () => {
+      // run findByType
+      const extensionId = 1;
+      await service.findOneById(extensionId);
+
+      // assert
+      expect(extensionRepositoryMock.findOne).toBeCalledWith({
+        where: { extensionId: extensionId },
       });
     });
   });
