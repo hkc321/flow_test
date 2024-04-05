@@ -1,9 +1,6 @@
 # Flow Test
 플로우 과제 - 파일 확장자 차단
 
-## 접속 주소
-https://jgchktestdns.shop/flow
-
 ## 사용 기술
 [![](https://img.shields.io/badge/NestJS-gray?logo=nestjs)](https://nestjs.com/)
 [![](https://img.shields.io/badge/javascript-gray?logo=javascript)](https://www.ecma-international.org/)
